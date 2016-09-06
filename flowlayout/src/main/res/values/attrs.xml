@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="FlowLayout">
+        <attr name="linePadding" format="dimension|reference" />
+        <attr name="mode">
+            <enum name="none" value="0" />
+            <enum name="align" value="1" />
+            <enum name="compress" value="2" />
+        </attr>
+    </declare-styleable>
+</resources>
