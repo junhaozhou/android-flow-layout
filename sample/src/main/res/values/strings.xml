@@ -1,3 +1,19 @@
 <resources>
     <string name="app_name">FlowLayout</string>
+    <string name="gravity_start">Start</string>
+    <string name="gravity_center">Center</string>
+    <string name="gravity_end">End</string>
+    <string name="gravity_align">Align</string>
+    <string name="gravity">Gravity</string>
+    <string name="max_lines">Max Lines</string>
+    <string name="lines_unlimited">Unlimited</string>
+    <string name="lines_1">1</string>
+    <string name="lines_2">2</string>
+    <string name="lines_3">3</string>
+    <string name="choice_mode">Choice Mode</string>
+    <string name="choice_mode_none">None</string>
+    <string name="choice_mode_single">Single</string>
+    <string name="choice_mode_multi">Multi</string>
+    <string name="add">Add</string>
+    <string name="clear">Clear</string>
 </resources>

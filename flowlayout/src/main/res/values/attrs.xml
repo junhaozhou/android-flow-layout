@@ -1,11 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <declare-styleable name="FlowLayout">
-        <attr name="linePadding" format="dimension|reference" />
-        <attr name="mode">
-            <enum name="none" value="0" />
-            <enum name="align" value="1" />
-            <enum name="compress" value="2" />
+        <attr name="fl_linePadding" format="dimension|reference"/>
+        <attr name="fl_gravity">
+            <enum name="start" value="0"/>
+            <enum name="center" value="1"/>
+            <enum name="end" value="2"/>
+            <enum name="align" value="3"/>
+        </attr>
+        <attr name="fl_maxLines" format="integer|reference"/>
+        <attr name="fl_choiceMode">
+            <enum name="none" value="0"/>
+            <enum name="single" value="1"/>
+            <enum name="multi" value="2"/>
         </attr>
     </declare-styleable>
 </resources>
