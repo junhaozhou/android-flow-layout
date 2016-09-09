@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/add"
+        android:title="@string/add"/>
+
+    <item
+        android:id="@+id/clear"
+        android:title="@string/clear"/>
+
+    <item android:title="@string/gravity">
+        <menu>
+            <item
+                android:id="@+id/gravity_start"
+                android:title="@string/gravity_start"/>
+            <item
+                android:id="@+id/gravity_center"
+                android:title="@string/gravity_center"/>
+            <item
+                android:id="@+id/gravity_end"
+                android:title="@string/gravity_end"/>
+            <item
+                android:id="@+id/gravity_align"
+                android:title="@string/gravity_align"/>
+        </menu>
+    </item>
+    <item android:title="@string/max_lines">
+        <menu>
+            <item
+                android:id="@+id/lines_unlimited"
+                android:title="@string/lines_unlimited"/>
+            <item
+                android:id="@+id/lines_one"
+                android:title="@string/lines_1"/>
+            <item
+                android:id="@+id/lines_two"
+                android:title="@string/lines_2"/>
+            <item
+                android:id="@+id/lines_three"
+                android:title="@string/lines_3"/>
+        </menu>
+    </item>
+    <item android:title="@string/choice_mode">
+        <menu>
+            <item
+                android:id="@+id/choice_mode_none"
+                android:title="@string/choice_mode_none"/>
+            <item
+                android:id="@+id/choice_mode_single"
+                android:title="@string/choice_mode_single"/>
+            <item
+                android:id="@+id/choice_mode_multi"
+                android:title="@string/choice_mode_multi"/>
+        </menu>
+    </item>
+</menu>
