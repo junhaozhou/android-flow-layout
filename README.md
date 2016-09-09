@@ -3,7 +3,7 @@ A android flow layout which can add child view via a adapter.
 
 ## Features
 - support adapter
-- support two layout: compress and align
+- support gravity: start, center, end and align
 - support line padding
 
 ## Usage
@@ -13,13 +13,15 @@ In xml：
         android:id="@+id/flow_layout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:linePadding="2dp" // the padding between lines except header and footer
+        app:fl_linePadding="2dp" // the padding between lines except header and footer
+        app:fl_maxLines="2"
+        app:fl_gravity="align"
         />
 ```
 In code:
 
-Extend `FlowLayoutAdapter` and add the adater to `FlowLayout` via `FlowLayout.setAdapter()`.
-You can see this code in module sample.
+Extend `FlowLayoutAdapter` and add the adapter to `FlowLayout` via `FlowLayout.setAdapter()`.
+You can see this code in module `sample`.
 
 ## Install
 ```
@@ -30,4 +32,4 @@ dependecies{
 
 ## TODO
 - support `notifyDataSetChanged`
-- support `align` and `compress` layout
+- support choice mode `single`and`multi`
