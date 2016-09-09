@@ -25,40 +25,107 @@ package com.littlechoc.flowlayout;
 
 import android.content.Context;
 import android.content.res.TypedArray;
+import android.support.annotation.IntDef;
 import android.util.AttributeSet;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ListView;
 
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Adapter support FlowLayout.
+ * FlowLayout
+ * <p/>
+ * gravity: start, center, end, align
+ * <p/>
+ * choice mode: none, single, multi
+ * <p/>
+ * linePadding
+ * <p/>
+ * maxLines
  */
 public class FlowLayout extends ViewGroup {
 
   /**
-   * 默认模式
+   * max lines is unlimited
    */
-  private static final int MODE_NONE = 0;
+  public static final int UNLIMITED_LINES = 0;
 
   /**
-   * 两端对齐模式
+   * gravity start
    */
-  private static final int MDOE_ALIGN = 1;
+  public static final int START = 0;
 
   /**
-   * 压缩模式
+   * gravity center
    */
-  private static final int MODE_COMPRESS = 2;
+  public static final int CENTER = 1;
 
-  private int mMode;
+  /**
+   * gravity end
+   */
+  public static final int END = 2;
+
+  /**
+   * gravity justify align
+   */
+  public static final int ALIGN = 3;
+
+  @Retention(RetentionPolicy.SOURCE)
+  @IntDef({START, CENTER, END, ALIGN})
+  public @interface Gravity {
+  }
+
+  /**
+   * support no choice
+   */
+  public static final int CHOICE_MODE_NONE = 0;
+
+  /**
+   * support single choice only
+   */
+  public static final int CHOICE_MODE_SINGLE = 1;
+
+  /**
+   * support multi choice
+   */
+  public static final int CHOICE_MODE_MULTI = 2;
+
+  @Retention(RetentionPolicy.SOURCE)
+  @IntDef({CHOICE_MODE_NONE, CHOICE_MODE_SINGLE, CHOICE_MODE_MULTI})
+  public @interface ChoiceMode {
+  }
+
+  /**
+   * gravity, default is start
+   */
+  private int mGravity;
+
+  /**
+   * padding between lines except the header and footer, default is 0
+   */
+  private int mLinePadding;
+
+  /**
+   * max lines to be shown the rest item would not be shown, default is unlimited
+   */
+  private int mMaxLines;
+
+  /**
+   * choice mode,default is none
+   */
+  private int mChoiceMode;
 
   private Context mContext;
+
   private int usefulWidth; // the space of a line we can use(line's width minus the sum of left and right padding
-  private int mLinePadding = 0; // the spacing between lines in flow layout
+
   private List<View> childList = new ArrayList<>();
-  private List<Integer> lineNumList = new ArrayList<>();
 
   public FlowLayout(Context context) {
     this(context, null);
@@ -72,26 +139,78 @@ public class FlowLayout extends ViewGroup {
     super(context, attrs, defStyleAttr);
     mContext = context;
     TypedArray mTypedArray = context.obtainStyledAttributes(attrs,
-        R.styleable.FlowLayout);
+            R.styleable.FlowLayout);
     mLinePadding = mTypedArray.getDimensionPixelSize(
-        R.styleable.FlowLayout_linePadding, 0);
-    mMode = mTypedArray.getInt(R.styleable.FlowLayout_mode, MODE_NONE);
+            R.styleable.FlowLayout_fl_linePadding, 0);
+    mMaxLines = mTypedArray.getInteger(R.styleable.FlowLayout_fl_maxLines, UNLIMITED_LINES);
+    mGravity = mTypedArray.getInt(R.styleable.FlowLayout_fl_gravity, START);
+    mChoiceMode = mTypedArray.getInt(R.styleable.FlowLayout_fl_choiceMode, CHOICE_MODE_NONE);
     mTypedArray.recycle();
+  }
+
+  public int getGravity() {
+    return mGravity;
+  }
+
+  public void setGravity(@Gravity int gravity) {
+    this.mGravity = gravity;
+    requestLayout();
+  }
+
+  public int getLinePadding() {
+    return mLinePadding;
+  }
+
+  public void setLinePadding(int linePadding) {
+    this.mLinePadding = linePadding < 0 ? 0 : linePadding;
+    requestLayout();
+  }
+
+  public int getMaxLines() {
+    return mMaxLines;
+  }
+
+  public void setMaxLines(int maxLines) {
+    this.mMaxLines = maxLines <= 0 ? UNLIMITED_LINES : maxLines;
+    requestLayout();
+  }
+
+  public int getChoiceMode() {
+    return mChoiceMode;
+  }
+
+  public void setChoiceMode(@ChoiceMode int choiceMode) {
+    this.mChoiceMode = choiceMode;
+  }
+
+  public void setAdapter(FlowLayoutAdapter adapter) {
+    if (adapter == null) {
+      throw new IllegalArgumentException("");
+    }
+    removeAllViews();
+    int count = adapter.getCount();
+    for (int i = 0; i < count; i++) {
+      addView(adapter.getView(this, i));
+    }
   }
 
   @Override
   protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-    int mPaddingLeft = getPaddingLeft();
-    int mPaddingRight = getPaddingRight();
-    int mPaddingTop = getPaddingTop();
-    int mPaddingBottom = getPaddingBottom();
+    int paddingLeft = getPaddingLeft();
+    int paddingRight = getPaddingRight();
+    int paddingTop = getPaddingTop();
+    int paddingBottom = getPaddingBottom();
 
     int widthSize = MeasureSpec.getSize(widthMeasureSpec);
     int heightMode = MeasureSpec.getMode(heightMeasureSpec);
     int heightSize = MeasureSpec.getSize(heightMeasureSpec);
-    int lineUsed = mPaddingLeft + mPaddingRight;
-    int lineY = mPaddingTop;
+
+    int lineUsed = paddingLeft + paddingRight;
+    int lineY = paddingTop;
     int lineHeight = 0;
+
+    int lines = 0;
+
     for (int i = 0; i < this.getChildCount(); i++) {
       View child = this.getChildAt(i);
       if (child.getVisibility() == GONE) {
@@ -116,109 +235,117 @@ public class FlowLayout extends ViewGroup {
 
       if (lineUsed + spaceWidth > widthSize) {
         //approach the limit of width and move to next line
-        lineY += lineHeight + mLinePadding;
-        lineUsed = mPaddingLeft + mPaddingRight;
+        lineY += lineHeight;
+        lineUsed = paddingLeft + paddingRight;
         lineHeight = 0;
+        lines++;
+        if (mMaxLines != UNLIMITED_LINES && lines >= mMaxLines) {
+          break;
+        }
+        lineY += mLinePadding;
       }
       if (spaceHeight > lineHeight) {
         lineHeight = spaceHeight;
       }
       lineUsed += spaceWidth;
     }
+
     setMeasuredDimension(
-        widthSize,
-        heightMode == MeasureSpec.EXACTLY ? heightSize : lineY + lineHeight + mPaddingBottom
+            widthSize,
+            heightMode == MeasureSpec.EXACTLY ? heightSize : lineY + lineHeight + paddingBottom
     );
   }
 
+  private List<LineData> mLines = new ArrayList<>();
+
   @Override
   protected void onLayout(boolean changed, int l, int t, int r, int b) {
-    int mPaddingLeft = getPaddingLeft();
-    int mPaddingRight = getPaddingRight();
-    int mPaddingTop = getPaddingTop();
+    int paddingLeft = getPaddingLeft();
+    int paddingRight = getPaddingRight();
+    int paddingTop = getPaddingTop();
 
-    int lineX = mPaddingLeft;
-    int lineY = mPaddingTop;
-    int lineWidth = r - l;
-    usefulWidth = lineWidth - mPaddingLeft - mPaddingRight;
-    int lineUsed = mPaddingLeft + mPaddingRight;
+    int width = r - l;
+    int lineWidth = 0;
     int lineHeight = 0;
-    int lineNum = 0;
 
-    lineNumList.clear();
-    for (int i = 0; i < this.getChildCount(); i++) {
-      View child = this.getChildAt(i);
-      if (child.getVisibility() == GONE) {
+    LineData lineData = LineData.generate();
+    mLines.clear();
+    int childCount = getChildCount();
+    for (int i = 0; i < childCount; i++) {
+      View child = getChildAt(i);
+      if (child.getVisibility() == GONE) { // do not layout if child is gone
         continue;
       }
-      int spaceWidth = 0;
-      int spaceHeight = 0;
-      int left;
-      int top;
-      int right;
-      int bottom;
       int childWidth = child.getMeasuredWidth();
       int childHeight = child.getMeasuredHeight();
+      MarginLayoutParams params = (MarginLayoutParams) child.getLayoutParams();
 
-      LayoutParams childLp = child.getLayoutParams();
-      if (childLp instanceof MarginLayoutParams) {
-        MarginLayoutParams mlp = (MarginLayoutParams) childLp;
-        spaceWidth = mlp.leftMargin + mlp.rightMargin;
-        spaceHeight = mlp.topMargin + mlp.bottomMargin;
-        left = lineX + mlp.leftMargin;
-        top = lineY + mlp.topMargin;
-        right = lineX + mlp.leftMargin + childWidth;
-        bottom = lineY + mlp.topMargin + childHeight;
-      } else {
-        left = lineX;
-        top = lineY;
-        right = lineX + childWidth;
-        bottom = lineY + childHeight;
-      }
-      spaceWidth += childWidth;
-      spaceHeight += childHeight;
+      if (lineWidth + childWidth + params.rightMargin + params.leftMargin > width - paddingLeft - paddingRight) { // the rest space can not store this child
+        lineData.lineWidth = lineWidth;
+        lineData.lineHeight = lineHeight;
+        mLines.add(lineData);
 
-      if (lineUsed + spaceWidth > lineWidth) {
-        //approach the limit of width and move to next line
-        lineNumList.add(lineNum);
-        lineY += lineHeight + mLinePadding;
-        lineUsed = mPaddingLeft + mPaddingRight;
-        lineX = mPaddingLeft;
+        // reset
+        lineWidth = 0;
         lineHeight = 0;
-        lineNum = 0;
-        if (childLp instanceof MarginLayoutParams) {
-          MarginLayoutParams mlp = (MarginLayoutParams) childLp;
-          left = lineX + mlp.leftMargin;
-          top = lineY + mlp.topMargin;
-          right = lineX + mlp.leftMargin + childWidth;
-          bottom = lineY + mlp.topMargin + childHeight;
-        } else {
-          left = lineX;
-          top = lineY;
-          right = lineX + childWidth;
-          bottom = lineY + childHeight;
+        lineData = LineData.generate();
+      }
+      lineWidth += childWidth + params.rightMargin + params.leftMargin;
+      lineHeight = Math.max(lineHeight, childHeight + params.bottomMargin + params.topMargin);
+      lineData.lineChild.add(child);
+    }
+    // add last line
+    lineData.lineWidth = lineWidth;
+    lineData.lineHeight = lineHeight;
+    mLines.add(lineData);
+
+    usefulWidth = width - paddingLeft - paddingRight;
+    // begin layout
+    int lines = mLines.size();
+    int showLines = mMaxLines == UNLIMITED_LINES ? lines : Math.min(mMaxLines, lines);
+
+    int left;
+    int top = paddingTop;
+
+    for (int i = 0; i < showLines; i++) {
+      lineData = mLines.get(i);
+      int space = 0;
+      switch (mGravity) { // left position
+        case START:
+          left = paddingLeft;
+          break;
+        case CENTER:
+          left = paddingLeft + (width - lineData.lineWidth) / 2;
+          break;
+        case END:
+          left = width - paddingRight - lineData.lineWidth;
+          break;
+        case ALIGN:
+          left = paddingLeft;
+          space = (width - lineData.lineWidth) / (lineData.lineChild.size() - 1);
+          break;
+        default:
+          left = paddingLeft;
+          break;
+      }
+
+      for (int j = 0; j < lineData.lineChild.size(); j++) {
+        View child = lineData.lineChild.get(j);
+        if (child.getVisibility() == GONE) {
+          continue;
+        }
+        MarginLayoutParams params = (MarginLayoutParams) child.getLayoutParams();
+        int ll = left + params.leftMargin;
+        int tt = top + params.topMargin;
+        int bb = tt + child.getMeasuredHeight();
+        int rr = ll + child.getMeasuredWidth();
+        child.layout(ll, tt, rr, bb);
+        left += child.getMeasuredWidth() + params.leftMargin + params.rightMargin;
+        if (mGravity == ALIGN) {
+          left += space;
         }
       }
-      child.layout(left, top, right, bottom);
-      lineNum++;
-      if (spaceHeight > lineHeight) {
-        lineHeight = spaceHeight;
-      }
-      lineUsed += spaceWidth;
-      lineX += spaceWidth;
-    }
-    // add the num of last line
-    lineNumList.add(lineNum);
-  }
-
-  public void setAdapter(FlowLayoutAdapter adapter) {
-    if (adapter == null) {
-      throw new IllegalArgumentException("");
-    }
-    removeAllViews();
-    int count = adapter.getCount();
-    for (int i = 0; i < count; i++) {
-      addView(adapter.getView(this, i));
+      top += lineData.lineHeight + mLinePadding;
     }
   }
 
@@ -408,25 +535,21 @@ public class FlowLayout extends ViewGroup {
   }
 
   /**
-   * cut the flowlayout to the specified num of lines
-   *
-   * @param line_num
+   * LineData store line height, line width and the child in this line
    */
-  public void specifyLines(int line_num) {
-    int childNum = 0;
-    if (line_num > lineNumList.size()) {
-      line_num = lineNumList.size();
+  private static class LineData {
+    int lineHeight;
+    int lineWidth;
+    List<View> lineChild;
+
+    public LineData() {
+      this.lineHeight = 0;
+      this.lineWidth = 0;
+      this.lineChild = new ArrayList<>();
     }
-    for (int i = 0; i < line_num; i++) {
-      childNum += lineNumList.get(i);
-    }
-    List<View> viewList = new ArrayList<>();
-    for (int i = 0; i < childNum; i++) {
-      viewList.add(getChildAt(i));
-    }
-    removeAllViews();
-    for (View v : viewList) {
-      addView(v);
+
+    static LineData generate() {
+      return new LineData();
     }
   }
 
