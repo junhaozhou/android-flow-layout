@@ -26,10 +26,9 @@ You can see this code in module `sample`.
 ## Install
 ```
 dependecies{
-  compile 'com.littlechoc.flowlayout:flowlayout:0.0.1'
+  compile 'com.littlechoc.flowlayout:flowlayout:0.0.3'
 }
 ```
 
 ## TODO
-- support `notifyDataSetChanged`
 - support choice mode `single`and`multi`
