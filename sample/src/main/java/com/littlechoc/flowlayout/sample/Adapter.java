@@ -39,4 +39,21 @@ public class Adapter extends FlowLayoutAdapter {
     tv.setText(LABELS.get(position));
     return child;
   }
+
+  public void add() {
+    LABELS.add("标签" + (int) (Math.random() * 100));
+    notifyDataSetChanged();
+  }
+
+  public void delete() {
+    if (!LABELS.isEmpty()) {
+      LABELS.remove(LABELS.size() - 1);
+      notifyDataSetChanged();
+    }
+  }
+
+  public void clear() {
+    LABELS.clear();
+    notifyDataSetChanged();
+  }
 }

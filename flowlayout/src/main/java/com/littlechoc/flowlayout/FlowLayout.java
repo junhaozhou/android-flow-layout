@@ -25,6 +25,7 @@ package com.littlechoc.flowlayout;
 
 import android.content.Context;
 import android.content.res.TypedArray;
+import android.database.DataSetObserver;
 import android.support.annotation.IntDef;
 import android.util.AttributeSet;
 import android.view.View;
@@ -124,6 +125,10 @@ public class FlowLayout extends ViewGroup {
 
   private List<View> childList = new ArrayList<>();
 
+  private DataSetObserver mDataSetObserver;
+
+  private FlowLayoutAdapter mAdapter;
+
   public FlowLayout(Context context) {
     this(context, null);
   }
@@ -184,10 +189,31 @@ public class FlowLayout extends ViewGroup {
     if (adapter == null) {
       throw new IllegalArgumentException("");
     }
+
+    // clear
+    if (mAdapter != null && mDataSetObserver != null) {
+      mAdapter.unregisterDataSetObserver(mDataSetObserver);
+    }
     removeAllViews();
-    int count = adapter.getCount();
+
+    mAdapter = adapter;
+    mDataSetObserver = new AdapterDataSetObserver();
+    mAdapter.registerDataSetObserver(mDataSetObserver);
+
+    int count = mAdapter.getCount();
     for (int i = 0; i < count; i++) {
       addView(adapter.getView(this, i));
+    }
+  }
+
+  private class AdapterDataSetObserver extends DataSetObserver {
+    @Override
+    public void onChanged() {
+      removeAllViews();
+      int count = mAdapter.getCount();
+      for (int i = 0; i < count; i++) {
+        addView(mAdapter.getView(FlowLayout.this, i));
+      }
     }
   }
 

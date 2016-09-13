@@ -17,13 +17,14 @@ import com.littlechoc.flowlayout.FlowLayout;
 public class MainActivity extends AppCompatActivity {
 
   private FlowLayout mFlowLayout;
+  private Adapter mAdapter;
 
   @Override
   protected void onCreate(@Nullable Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
 
     setContentView(R.layout.activity_main);
-    Adapter mAdapter = new Adapter();
+    mAdapter = new Adapter();
     mFlowLayout = (FlowLayout) findViewById(R.id.flow_layout);
     mFlowLayout.setAdapter(mAdapter);
 
@@ -39,6 +40,15 @@ public class MainActivity extends AppCompatActivity {
   public boolean onOptionsItemSelected(MenuItem item) {
     int id = item.getItemId();
     switch (id) {
+      case R.id.add:
+        mAdapter.add();
+        return true;
+      case R.id.delete:
+        mAdapter.delete();
+        return true;
+      case R.id.clear:
+        mAdapter.clear();
+        return true;
       case R.id.gravity_start:
         mFlowLayout.setGravity(FlowLayout.START);
         return true;
