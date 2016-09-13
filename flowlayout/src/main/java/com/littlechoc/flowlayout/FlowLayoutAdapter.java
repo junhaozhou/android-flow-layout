@@ -1,7 +1,11 @@
 package com.littlechoc.flowlayout;
 
+import android.database.DataSetObservable;
+import android.database.DataSetObserver;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.BaseAdapter;
+import android.widget.ListView;
 
 /**
  * FlowLayoutAdapter
@@ -10,6 +14,8 @@ import android.view.ViewGroup;
  **/
 
 public abstract class FlowLayoutAdapter {
+
+  private DataSetObservable mDataSetObservable = new DataSetObservable();
 
   public int getCount() {
     return 0;
@@ -22,6 +28,14 @@ public abstract class FlowLayoutAdapter {
   public abstract View getView(ViewGroup parent, int position);
 
   public void notifyDataSetChanged() {
-    // TODO Not support yet
+    mDataSetObservable.notifyChanged();
+  }
+
+  public void registerDataSetObserver(DataSetObserver observer) {
+    mDataSetObservable.registerObserver(observer);
+  }
+
+  public void unregisterDataSetObserver(DataSetObserver observer) {
+    mDataSetObservable.unregisterObserver(observer);
   }
 }
